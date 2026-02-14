@@ -1,36 +1,45 @@
-# State-of-Charge (SOC) Estimation of Li-Ion Batteries using Extended Kalman Filter (EKF)
+# Lithium-Ion BMS: SOC Estimation using Extended Kalman Filter
 
-## 📌 Project Overview
-This repository contains a closed-loop Battery Management System (BMS) simulation built in MATLAB/Simulink. The project accurately estimates the State-of-Charge (SOC) of a Lithium-Ion cell under dynamic load conditions by fusing Coulomb Counting with Voltage feedback using an Extended Kalman Filter (EKF).
+## Project Overview
+This repository contains a closed-loop Battery Management System (BMS) simulation developed in MATLAB/Simulink. The primary objective is to accurately estimate the State-of-Charge (SOC) of a Li-Ion cell under dynamic load by fusing Coulomb Counting (current integration) with Voltage feedback via an Extended Kalman Filter (EKF). 
 
-**Production-ready C code was automatically generated from this model using Simulink Coder, demonstrating a complete Model-Based Design (MBD) workflow.**
+To demonstrate a complete Model-Based Design (MBD) workflow, production-ready embedded C code was generated directly from the Simulink model using Simulink Coder.
 
-## ⚙️ Key Features
-* **Plant Modeling:** 1st-order Equivalent Circuit Model (ECM) simulating OCV hysteresis, internal resistance, and RC polarization dynamics.
-* **EKF Algorithm:** A custom-built non-linear state observer that self-corrects SOC estimates based on real-time voltage sensor feedback.
-* **Robust Convergence:** Successfully demonstrated the algorithm's ability to correct a massive **50% initial SOC initialization error** to within 5% accuracy in under 20 seconds.
-* **Embedded-Ready Code:** Includes auto-generated C/C++ code ready for deployment to a microcontroller.
+## System Architecture
 
-## 📊 Results & Performance
-The filter was intentionally stress-tested with a completely wrong initial guess (Algorithm started at 50% SOC, while the physical plant was at 100% SOC). 
+### 1. Plant Modeling (Digital Twin)
+The physical battery is simulated using a 1st-order Equivalent Circuit Model (ECM). 
+* **State-of-Charge & OCV:** A 1-D Lookup Table is utilized to map the non-linear relationship between the battery's SOC and its Open Circuit Voltage (OCV).
+* **Dynamic Response:** The model captures instantaneous voltage drops via Ohmic internal resistance ($R_0$) and simulates chemical diffusion lag using an RC polarization network ($R_1$, $C_1$).
 
-*As shown in the scope output below, the EKF instantly detects the voltage mismatch and snaps the estimated SOC (Blue) to the True SOC (Yellow) in seconds, ensuring stable tracking as the battery discharges.*
+### 2. State Observer Design (EKF)
+A non-linear state observer was designed to correct SOC drift caused by sensor noise and integration errors. 
+* **Measurement Update:** The EKF compares the plant's actual terminal voltage against the internal model's predicted voltage.
+* **Correction Logic:** The resulting residual error is multiplied by tuned Kalman gains to continually update the state vector (SOC and Polarization Voltage).
 
-![EKF Convergence Graph](image_b1f980.png)
+## Simulation Results: Convergence Validation
+To validate the robustness of the observer, the algorithm was stress-tested using a massive initialization mismatch. 
+* **Initial Conditions:** The physical plant was initialized at 100% SOC, while the EKF algorithm was deliberately initialized at 50% SOC.
+* **Performance:** As shown in the scope data below, the observer instantly detects the voltage discrepancy and converges to the true SOC within 20 seconds. Post-convergence, the filter maintains stable, high-fidelity tracking throughout the discharge cycle.
 
-## 🛠️ The Math (State-Space Architecture)
-The EKF handles the non-linear relationship between SOC and OCV (Open Circuit Voltage). The algorithm relies on two tuned Kalman gains:
-1. **SOC Gain (0.5):** Dictates how aggressively the filter trusts the voltage sensor to correct the charge estimate.
-2. **Polarization Voltage Gain (-0.1):** Provides negative feedback to stabilize the internal RC lag calculation, preventing mathematical divergence.
+![EKF Convergence Graph](SOC Comaparison.png)
 
-## 🚀 How to Run
+## Filter Tuning Parameters
+* **SOC Gain ($K_{soc}$):** Set to `0.5` to prioritize rapid convergence and aggressively correct initial sensor blindness.
+* **Polarization Voltage Gain ($K_v$):** Set to `-0.1` to provide necessary negative feedback, stabilizing the internal RC lag calculation and preventing mathematical divergence in the closed loop.
+
+## Repository Structure
+* `SOC_Estimation_using_kalman_filter.slx`: The primary Simulink model containing the plant and observer.
+* `_grt_rtw/`: Directory containing the auto-generated C/C++ source code and header files for microcontroller deployment.
+
+## How to Run
 1. Clone this repository.
 2. Open the `.slx` file in MATLAB/Simulink.
 3. Run the simulation.
 4. Open the `SOC_Comparison` scope to view real-time convergence.
 5. Inspect the generated `.c` and `.h` files to view the embedded C code.
 
-## 💻 Tech Stack
+## Tech Stack
 * MATLAB / Simulink
 * Simulink Coder (C/C++ Code Generation)
 * Control Systems / Estimation Theory
