@@ -22,7 +22,7 @@ To validate the robustness of the observer, the algorithm was stress-tested usin
 * **Initial Conditions:** The physical plant was initialized at 100% SOC, while the EKF algorithm was deliberately initialized at 50% SOC.
 * **Performance:** As shown in the scope data below, the observer instantly detects the voltage discrepancy and converges to the true SOC within 20 seconds. Post-convergence, the filter maintains stable, high-fidelity tracking throughout the discharge cycle.
 
-![EKF Convergence Graph](SOC Comaparison.png)
+![EKF Convergence Graph](SOC Comparison.png)
 
 ## Filter Tuning Parameters
 * **SOC Gain ($K_{soc}$):** Set to `0.5` to prioritize rapid convergence and aggressively correct initial sensor blindness.
