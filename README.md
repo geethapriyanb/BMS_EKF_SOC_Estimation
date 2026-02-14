@@ -1,4 +1,4 @@
-# Lithium Ion BMS: SOC Estimation using Extended Kalman Filter
+# Lithium-Ion BMS: SOC Estimation using Extended Kalman Filter
 
 ## Project Overview
 This repository contains a closed-loop Battery Management System (BMS) simulation developed in MATLAB/Simulink. The primary objective is to accurately estimate the State-of-Charge (SOC) of a Li-Ion cell under dynamic load by fusing Coulomb Counting (current integration) with Voltage feedback via an Extended Kalman Filter (EKF). 
